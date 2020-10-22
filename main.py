@@ -1,5 +1,5 @@
 ## Critério de parada -> Certo para todas as entradas | Pesos não se alteram mais
-class perceptron:
+class adaline:
 
     #################################### FUNÇÕES PARA INICIALIZAÇÃO ####################################
 
@@ -18,13 +18,10 @@ class perceptron:
         self.dimensoes = len(exemplos[0]) - 1
         self.lista_de_pesos = self.iniciar_nova_lista_de_pesos()
 
-
-
-
     #  Método ToString que retorna os pesos e número de dimensões do perceptron
     def __str__(self):
         return ("Perceptron\n" +
-                "Quantia de Dimensões:\t[" + str(self.dimensoes) +"]\n" +
+                "Quantia de Dimensões:\t[" + str(self.dimensoes) + "]\n" +
                 "Lista de Pesos:\t" + str(self.lista_de_pesos))
 
     #   Iniciar todos os pesos como 0
@@ -35,15 +32,15 @@ class perceptron:
             lista.append(0)
         # se existir um bias, adicione o teta a lista de pesos
         if self.bias != 0:
-            lista[0]=self.teta
+            lista[0] = self.teta
         return lista
 
     #   Adiciona o bias (vetor extendido)
     def colocar_bias(self):
         for i in range(len(self.lista_de_exemplos)):
             # print("antes: "+str(self.lista_de_exemplos[i]))
-            #insere na posição 0 a característica do bias
-            self.lista_de_exemplos[i].insert(0,self.bias)
+            # insere na posição 0 a característica do bias
+            self.lista_de_exemplos[i].insert(0, self.bias)
             # print("depois: "+str(self.lista_de_exemplos[i]))
 
     #   Imprime base de dados
@@ -59,7 +56,8 @@ class perceptron:
                     print("X" + str(i) + " : \t" + str(exemplo[i]))
                 else:
                     print("Classe:\t" + str(exemplo[i]))
-            print(50*"-")
+            print(50 * "-")
+
     #####################################################################################################
 
     ################################### FUNÇÕES PARA PERCEPTRON COMUM ###################################
@@ -118,8 +116,8 @@ class perceptron:
                 listas_iguais = self.comparar_lista_de_pesos(novos_pesos)
                 if listas_iguais:
                     contador += 1
-                    listas_iguais=False
-                    print("Iterações sem Mudança de Pesos : "+ str(contador))
+                    listas_iguais = False
+                    print("Iterações sem Mudança de Pesos : " + str(contador))
                     # Se o número de vezes que a lista permaneceu inalterada for igual ao número de exemplos, então o Perceptron  atingiu seu ponto de parada
                     if contador == número_de_exemplos:
                         print("Treinamento completo, Perceptron Pronto")
@@ -128,56 +126,61 @@ class perceptron:
                 else:
                     print("Novos Pesos: " + str(self.lista_de_pesos))
                     contador = 0
+
     #####################################################################################################
+
+    #### Critério de parada do ADALINE = Erro começa a subir
+    ##### Significa que por limitação de hardware já passamos do erro mínimo (normalmente impossível de se obter)
 
     ####################################### FUNÇÕES PARA ADALINE ########################################
 
-    #   (ADALINE) Regra Delta para atualização de Pesos com erro mínimo -> RETORNA LISTA DE PESOS
+    #   (ADALINE) Regra Delta para atualização de Pesos com erro mínimo -> RETORNA LISTA DE PESOS e ERRO
     def lms(self, exemplo):
-        novos_pesos=[]
+        novos_pesos = []
         erro, erro_quadratico = self.erro_adaline(exemplo)
         a = self.taxa_de_aprendizagem
         exp = 2 * a * erro
-        somatorio =0
+        somatorio = 0
         for feature in exemplo:
             somatorio += exp * feature
         for i in range(len(self.lista_de_pesos)):
             novo_peso = self.lista_de_pesos[i] + somatorio
             novos_pesos.append(novo_peso)
-        print("Novos Pesos : "+str(novos_pesos))
-        return novos_pesos
+        return novos_pesos, erro
 
     # calcula o erro para o vetor de pesos (que é uma lista)
-    def erro_adaline(self,exemplo):
-        erro =0
+    def erro_adaline(self, exemplo):
+        erro = 0
         u, saída_desejada = self.junção_somadora(exemplo)
         # X é uma característica do vetor de características
         erro += (saída_desejada - u)
-        #este é o erro quadrático -> 1/2 erro^2
-        erro_quadrático = 0.5 * pow(erro,2)
+        # este é o erro quadrático -> 1/2 erro^2
+        erro_quadrático = 0.5 * pow(erro, 2)
         return erro, erro_quadrático
 
     # Treina o Adaline
     def treinar_adaline(self):
         contador =0
-        limite = len(self.lista_de_exemplos)
+        limite_contador = len(self.lista_de_pesos)
+        erro_minimo = None ## o erro mínimo armazena o menor erro encontrado
         pronto = False
         while not pronto:
             for exemplo in self.lista_de_exemplos:
-                novos_pesos = self.lms(exemplo)
-                igual = self.comparar_lista_de_pesos(novos_pesos)
-                if igual:
-                    contador +=1
-                    print("Iterações sem mudança de pesos: "+str(contador))
-                    if contador == limite:
+                novos_pesos, erro = self.lms(exemplo)
+                if erro_minimo is None or erro_minimo > abs(erro):
+                    ## o erro mínimo só é atualizado se for encontrado um módulo de erro menor ou ele ainda estiver vazio
+                    erro_minimo = abs(erro)
+                    ## Se a lista for diferente, ela é atualizada e o contador é zerado
+                    if self.comparar_lista_de_pesos(novos_pesos):
+                        print("Novos Pesos: " + str(novos_pesos))
+                    contador = 0
+                else:
+                    ## O CRITÉRIO DE PARADA É -> encontrar o erro perfeito = 0 OU percorrer TODA A BASE DE TREINO sem mudar a lista de pesos
+                    contador+=1
+                    print("Iterações sem mudanças de peso: " + str(contador) + " - Erro calculado: " + str(erro))
+                    if contador == limite_contador or erro_minimo == 0:
                         pronto = True
                         break
-                else:
-                    contador = 0
-        pass
-
-
-
     #####################################################################################################
 
 
@@ -191,23 +194,19 @@ porta_nand2 = [[0, 0, 1], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
 
 ##Inicialização
 # p = perceptron(taxa_de_aprendizagem=0.1, teta=0.5, exemplos=porta_nand3, bias=0)
-p = perceptron(taxa_de_aprendizagem=0.1, teta=0.5, exemplos=porta_nand3, bias=0)
+p = adaline(taxa_de_aprendizagem=0.1, teta=0.5, exemplos=porta_nand2, bias=1)
 ##
 ##Cabeçalho
-print(30*"_"+"Perceptron Inicial"+31*"_")
+print(30 * "_" + "Perceptron Inicial" + 31 * "_")
 print(p.__str__())
-print(80*"_")
+print(80 * "_")
 ##
 ##Treinamento
-p.treinar_perceptron()
+p.treinar_adaline()
 # print(porta_nand)
 # p.imprimir_base()
 ##
 ##Rodapé
-print("\n\n"+30*"_"+"Perceptron Após Treino"+30*"_")
+print("\n\n" + 30 * "_" + "Perceptron Após Treino" + 30 * "_")
 print(p.__str__())
-print(82*"_")
-
-
-
-
+print(82 * "_")
