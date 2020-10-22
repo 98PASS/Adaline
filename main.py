@@ -5,22 +5,22 @@ class adaline:
 
     #   Construtor
     ## A entrada deve ser passada com uma Lista de Listas, onde as listas dentro da Lista_de_Features é um EXEMPLO com sua classificação
-    def __init__(self, taxa_de_aprendizagem, teta=0, exemplos=[], bias=0):
+    def __init__(self, taxa_de_aprendizagem, teta=0, amostras=[], bias=0):
         ## atribuição de constantes
         self.bias = bias  # a extensão
-        self.lista_de_exemplos = exemplos
+        self.lista_de_exemplos = amostras
         self.taxa_de_aprendizagem = taxa_de_aprendizagem
         self.teta = teta
         ##
         if bias != 0:
             self.colocar_bias()
         ##
-        self.dimensoes = len(exemplos[0]) - 1
+        self.dimensoes = len(amostras[0]) - 1
         self.lista_de_pesos = self.iniciar_nova_lista_de_pesos()
 
     #  Método ToString que retorna os pesos e número de dimensões do perceptron
     def __str__(self):
-        return ("Perceptron\n" +
+        return ("Perceptron/Adaline\n" +
                 "Quantia de Dimensões:\t[" + str(self.dimensoes) + "]\n" +
                 "Lista de Pesos:\t" + str(self.lista_de_pesos))
 
@@ -194,7 +194,7 @@ porta_nand2 = [[0, 0, 1], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
 
 ##Inicialização
 # p = perceptron(taxa_de_aprendizagem=0.1, teta=0.5, exemplos=porta_nand3, bias=0)
-p = adaline(taxa_de_aprendizagem=0.1, teta=0.5, exemplos=porta_nand2, bias=1)
+p = adaline(taxa_de_aprendizagem=0.1, teta=0.5, amostras=porta_nand2, bias=1)
 ##
 ##Cabeçalho
 print(30 * "_" + "Perceptron Inicial" + 31 * "_")
