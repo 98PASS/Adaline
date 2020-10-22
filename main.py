@@ -194,7 +194,7 @@ porta_nand2 = [[0, 0, 1], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
 
 ##Inicialização
 # p = perceptron(taxa_de_aprendizagem=0.1, teta=0.5, exemplos=porta_nand3, bias=0)
-p = adaline(taxa_de_aprendizagem=0.1, teta=0.5, amostras=porta_nand2, bias=1)
+p = adaline(taxa_de_aprendizagem=0.1, teta=0.5, amostras=porta_nand3, bias=0)
 ##
 ##Cabeçalho
 print(30 * "_" + "Perceptron Inicial" + 31 * "_")
