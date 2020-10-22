@@ -5,7 +5,7 @@ class perceptron:
 
     #   Construtor
     ## A entrada deve ser passada com uma Lista de Listas, onde as listas dentro da Lista_de_Features é um EXEMPLO com sua classificação
-    def __init__(self, taxa_de_aprendizagem, teta, exemplos, bias=0):
+    def __init__(self, taxa_de_aprendizagem, teta=0, exemplos=[], bias=0):
         ## atribuição de constantes
         self.bias = bias  # a extensão
         self.lista_de_exemplos = exemplos
@@ -132,9 +132,20 @@ class perceptron:
 
     ####################################### FUNÇÕES PARA ADALINE ########################################
 
-    #   (ADALINE) Regra Delta para atualização de Pesos com erro mínimo
-    def regra_delta(self):
-        gradiente = self.calculo_gradiente()
+    #   (ADALINE) Regra Delta para atualização de Pesos com erro mínimo -> RETORNA LISTA DE PESOS
+    def lms(self, exemplo):
+        novos_pesos=[]
+        erro, erro_quadratico = self.erro_adaline(exemplo)
+        a = self.taxa_de_aprendizagem
+        exp = 2 * a * erro
+        somatorio =0
+        for feature in exemplo:
+            somatorio += exp * feature
+        for i in range(len(self.lista_de_pesos)):
+            novo_peso = self.lista_de_pesos[i] + somatorio
+            novos_pesos.append(novo_peso)
+        print("Novos Pesos : "+str(novos_pesos))
+        return novos_pesos
 
     # calcula o erro para o vetor de pesos (que é uma lista)
     def erro_adaline(self,exemplo):
@@ -146,45 +157,24 @@ class perceptron:
         erro_quadrático = 0.5 * pow(erro,2)
         return erro, erro_quadrático
 
-    # Calcula o gradiente decrescente do erro para o exemplo passado
-    def calculo_gradiente(self, exemplo):
-        gradiente = 0
-        erro, erro_quadratico = self.erro_adaline(exemplo)
-        #para cada característica do exemplo, multiplique erro * característica
-        for x in exemplo:
-            gradiente += erro*x
-        return gradiente
-
     # Treina o Adaline
     def treinar_adaline(self):
-        self.lista_de_pesos = self.iniciar_nova_lista_de_pesos()
-
-        a = self.taxa_de_aprendizagem
-        pronto = False
         contador =0
-        limite_do_contador=len(self.lista_de_exemplos)
-
-        # Loop de treino que só para quando os pesos não mudarem por 1 periodo
+        limite = len(self.lista_de_exemplos)
+        pronto = False
         while not pronto:
             for exemplo in self.lista_de_exemplos:
-                gradiente = self.calculo_gradiente(exemplo)
-                if gradiente != 0:
-                    #Inicia-se uma nova lista para os pesos
-                    novos_pesos = []
-                    #Preenche-se a lista de pesos com o cálculo peso * calculo_gradiente
-                    for peso in self.lista_de_pesos:
-                        novo_peso = peso + a*gradiente
-                        novos_pesos.append(novo_peso)
-                #Comparação da lista de pesos
-                iguais = self.comparar_lista_de_pesos(novos_pesos)
-                if iguais:
-                    contador += 1
-                    print("Iterações sem mudança de pesos: "+ str(contador))
-                    if contador == limite_do_contador:
+                novos_pesos = self.lms(exemplo)
+                igual = self.comparar_lista_de_pesos(novos_pesos)
+                if igual:
+                    contador +=1
+                    print("Iterações sem mudança de pesos: "+str(contador))
+                    if contador == limite:
                         pronto = True
+                        break
                 else:
-                    print(self.lista_de_pesos)
-                    contador=0
+                    contador = 0
+        pass
 
 
 
@@ -201,7 +191,7 @@ porta_nand2 = [[0, 0, 1], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
 
 ##Inicialização
 # p = perceptron(taxa_de_aprendizagem=0.1, teta=0.5, exemplos=porta_nand3, bias=0)
-p = perceptron(taxa_de_aprendizagem=0.1, teta=0.5, exemplos=porta_nand2, bias=1)
+p = perceptron(taxa_de_aprendizagem=0.1, teta=0.5, exemplos=porta_nand3, bias=0)
 ##
 ##Cabeçalho
 print(30*"_"+"Perceptron Inicial"+31*"_")
