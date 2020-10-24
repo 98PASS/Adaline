@@ -19,9 +19,11 @@ conjunto_de_teste = pd.read_csv("base-adaline/base2.txt","\t",header=None)
 lista_para_teste = conjunto_de_teste.values.tolist()
 ###############################################################################################
 
-a = adl.adaline(amostras=listabb,taxa_de_aprendizagem=0.1)
+a = adl.Adaline(amostras=listabb, taxa_de_aprendizagem=0.1, épocas_de_treino=100)
 a.treinar()
 print(a.__str__())
-print(a.pegar_lista_de_pesos())
-print(a.testar_amostra([0.4329, -1.3719, 0.7022, -0.8535])) #Para a base bb, deve retornar 1
-print(a.testar_amostra([0.3024, 0.2286, 0.8630, 2.7909])) #Para a base bb, deve retornar -1
+pesos = a.pegar_lista_de_pesos()
+
+
+print("Ada ->\t1\t=\t" + str(a.testar_entrada([0.4329, -1.3719, 0.7022, -0.8535]))) #Para a base bb, deve retornar 1
+print("Ada ->\t-1\t=\t"+ str(a.testar_entrada([0.3024, 0.2286, 0.8630, 2.7909]))) #Para a base bb, deve retornar -1

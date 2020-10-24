@@ -1,21 +1,22 @@
 class Perceptron:
     #   Construtor
     ## A entrada deve ser passada com uma Lista de Amostras, onde cada Amostra é uma Lista de características, sendo o último elemento da lista a classificação desejada
-    def __init__(self, amostras=[[]], taxa_de_aprendizagem=0.1, teta=0, bias=1):
+    def __init__(self, amostras=[[]], taxa_de_aprendizagem=0.1, teta=0, bias=0):
         ## atribuição de constantes
-        self.amostras = amostras
         self.taxa_de_aprendizagem = taxa_de_aprendizagem
         self.teta = teta
         self.bias = bias
+        self.número_de_caracteristicas = len(amostras[0])
         # INSERÇÃO DO BIAS
-        if teta == 0:
+        if bias == 0:
             # se não está sendo usado, corrija o número de características
             self.usando_bias = False
+            self.amostras = amostras
             self.número_de_caracteristicas -= 1
         else:
-            # se está, insira-o no conjunto de treino
+            # se está usando o bias, insira-o em cada elemento
             self.usando_bias = True
-            self.inserir_bias_nas_amostras()
+            self.amostras = self.inserir_bias_em_lista(amostras)
         # INICIAÇÃO DOS PESOS
         self.pesos = self.criar_lista_de_pesos_zerada()
 
@@ -40,11 +41,14 @@ class Perceptron:
             contador_de_pesos += 1
         return string
 
-    #insere o bias nas amostras de aprendizado
-    def inserir_bias_nas_amostras(self):
-        #insere o bias nas amostras
-        for exemplo in self.amostras:
-            exemplo.insert(0,self.bias)
+    # insere o bias nas amostras de aprendizado
+    def inserir_bias_em_lista(self, lista_de_amostras):
+        nova_lista = []
+        # insere o bias nas amostras (na primeira posição -> X0)
+        for exemplo in lista_de_amostras:
+            exemplo.insert(0, self.bias)
+            nova_lista.append(exemplo)
+        return nova_lista
 
     ## Cria lista de pesos com zeros, onde o primeiro elemento recebe Teta
     def criar_lista_de_pesos_zerada(self) -> list:
@@ -101,7 +105,7 @@ class Perceptron:
         return saída_desejada - saída_obtida
 
     #testa e dá saída
-    def testar_amostra(self,amostra)->int:
+    def testar_entrada(self, amostra)->int:
         if self.usando_bias:
             amostra.insert(0,self.bias)
         return self.função_de_ativação(self.calculo_de_u(amostra))
