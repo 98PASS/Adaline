@@ -23,7 +23,7 @@ bases_combinadas = pd.concat(bases)
 lista_combinada = bases_combinadas.values.tolist()
 ###############################################################################################
 
-a = adl.Adaline(amostras=lista_2, taxa_de_aprendizagem=0.001)
+a = adl.Adaline(amostras=lista_2, taxa_de_aprendizagem=0.01,teta=0.5,bias=-1)
 eqm_lista=a.treinar(precisão=0.00000005,lim_épocas=1000)
 Y,gu,acertos=a.testar_uma_base(lista_2)
 

@@ -76,13 +76,14 @@ class Adaline:
     #imprime um único exemplo
     def imprimir_uma_amostra(self,amostra):
         contador = 0
+        gg = 1 if not self.usando_bias else 0
         for característica in amostra:
-            if contador == 0:
+            if contador == 0 and self.usando_bias:
                 print("X" + str(contador) + " = " + str(característica) + " -> (Bias)")
             elif contador == self.número_de_caracteristicas:
                 print("Classificação = " + str(característica))
             else:
-                print("X" + str(contador) + " = " + str(característica))
+                print("X" + str(contador+gg) + " = " + str(característica))
             contador += 1
 
     # calcula indução do adaline para uma amostra
@@ -153,28 +154,32 @@ class Adaline:
             #inicia uma nova época de Treinamento
             print("\n\tÉpoca : " + str(contador_de_épocas) + "\n")
             for exemplo in self.amostras:
-                self.testar_exemplo(exemplo)
+                # self.testar_exemplo(exemplo)
                 erro = self.calculo_de_erro(exemplo)
+                self.imprimir_uma_amostra(exemplo)
+                print("Ada_Saída -> " + str(self.testar_exemplo(exemplo)))
+                print(25*"_")
                 ##adiciona um quadrado de erro na lista de erros da época
                 erros_da_época.append(pow(erro,2))
                 ###### Regra Delta (LMS) -> Wj+1 = Wj + (taxa_de_aprendizagem * erro) * Xi ########
                 for i in range(self.número_de_caracteristicas):
-                    novos_pesos[i] += (self.taxa_de_aprendizagem * erro) * exemplo[i]
+                    novos_pesos[i] += self.taxa_de_aprendizagem * erro * exemplo[i]
                     ################################################################################
             #Atualiza os pesos do adaline após seu cálculo (atualizando ao final da época)
             self.pesos = novos_pesos
             eqm_anterior = eqm_atual
             eqm_atual = self.calculo_de_EQM(erros_da_época,len(self.amostras))
             lista_eqm.append(eqm_atual)
-            print("EQM -> "+str(eqm_atual))
+            print("Época ["+str(contador_de_épocas)+"] EQM -> "+str(eqm_atual))
             #Contar final da época de treinamento
-            contador_de_épocas += 1
             #Compara se o módulo de EQM atual - Anterior <= Precisão, se sim, atingiu a precisão desejada
             if abs(eqm_atual - eqm_anterior) <= precisão and len(lista_eqm) >=2:
                 #Se sim, informa que convergiu, e para o treinamento
                 sinal_de_convergencia = True
                 print(50*"_")
                 print("Convergência na época ["+str(contador_de_épocas)+"]")
+            else:
+                contador_de_épocas += 1
         #Fim do treinamento
         print("Treinamento Completo em ["+str(contador_de_épocas)+"] Épocas.")
         print(50 * "_")
