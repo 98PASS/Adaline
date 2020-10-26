@@ -2,12 +2,11 @@
 class Adaline:
     #   Construtor
     ## A entrada deve ser passada com uma Lista de Amostras, onde cada Amostra é uma Lista de características, sendo o último elemento da lista a classificação desejada
-    def __init__(self, amostras=[[]], taxa_de_aprendizagem=0.1, épocas_de_treino=100,teta=0, bias=0):
+    def __init__(self, amostras=[[]], taxa_de_aprendizagem=0.1, teta=0, bias=0):
         ## atribuição de constantes
         self.taxa_de_aprendizagem = taxa_de_aprendizagem
         self.teta = teta
         self.bias = bias
-        self.épocas_de_treino = épocas_de_treino
         # apesar de a última posição ser a característica esperada, vou adicionar o bias, então a contagem continua correta
         self.número_de_caracteristicas = len(amostras[0])
         # INSERÇÃO DO BIAS
@@ -107,6 +106,19 @@ class Adaline:
             entrada.insert(0, self.bias)
         return self.função_de_ativação(self.calculo_de_u(entrada))
 
+    #Testa uma base de dados e retorna um trio de listas:(Saídas_Esperadas, Saídas_Obtidas, Acertos)
+    def testar_uma_base(self,base)->(list,list,list):
+        saídas_esperadas = []
+        saídas_obtidas = []
+        lista_de_acertos = []
+        for exemplo in base:
+            saída_esperada = exemplo[-1]
+            saída_do_ada = self.testar_entrada(exemplo)
+            saídas_esperadas.append(saída_esperada)
+            saídas_obtidas.append(saída_do_ada)
+            lista_de_acertos.append(saída_esperada==saída_do_ada)
+        return saída_esperada,saídas_obtidas,lista_de_acertos
+
     # testa e dá a saída para uma amostra de dentro da base de treino
     def testar_exemplo(self,exemplo)->int:
         return self.função_de_ativação(self.calculo_de_u(exemplo))
@@ -117,37 +129,53 @@ class Adaline:
         u = self.calculo_de_u(amostra)
         return saída_desejada - u
 
+    #calcula o Erro quadratico
+    def calculo_de_EQ(self,lista_de_quadrados_de_erros):
+        erro_quadrático = 1/2 * sum(lista_de_quadrados_de_erros)
+        return erro_quadrático
+
+    #calcula o Erro Quadratico Medio
+    def calculo_de_EQM(self,lista_de_quadrados_de_erros,numero_de_exemplos):
+        return 1/numero_de_exemplos * sum(lista_de_quadrados_de_erros)
+
     #treina o adaline
-    def treinar(self):
+    def treinar(self,precisão=0,lim_épocas = 100):
         contador_de_épocas = 1
+        lista_eqm=[]
         sinal_de_convergencia = False
         #loop de treinamento
         print(50 * "______" + "\tTREINAMENTO INICIADO" + 50 * "_")
-        pesos_da_ultima_epoca = self.pesos
-        while contador_de_épocas < self.épocas_de_treino and not sinal_de_convergencia:
+        eqm_atual = 0
+        while contador_de_épocas < lim_épocas and not sinal_de_convergencia:
             #inicia lista de pesos vazia para ser preenchida pedo lms
-            novos_pesos = self.criar_lista_de_pesos_zerada()
+            novos_pesos = self.pesos
+            erros_da_época = []
             #inicia uma nova época de Treinamento
             print("\n\tÉpoca : " + str(contador_de_épocas) + "\n")
             for exemplo in self.amostras:
                 self.testar_exemplo(exemplo)
                 erro = self.calculo_de_erro(exemplo)
+                ##adiciona um quadrado de erro na lista de erros da época
+                erros_da_época.append(pow(erro,2))
                 ###### Regra Delta (LMS) -> Wj+1 = Wj + (taxa_de_aprendizagem * erro) * Xi ########
                 for i in range(self.número_de_caracteristicas):
-                    novos_pesos[i] = self.pesos[i] + (self.taxa_de_aprendizagem * erro) * exemplo[i]
+                    novos_pesos[i] += (self.taxa_de_aprendizagem * erro) * exemplo[i]
                     ################################################################################
-                #Atualiza os pesos do adaline após seu cálculo (atualizando a cada amostra)
-                self.pesos = novos_pesos
+            #Atualiza os pesos do adaline após seu cálculo (atualizando ao final da época)
+            self.pesos = novos_pesos
+            eqm_anterior = eqm_atual
+            eqm_atual = self.calculo_de_EQM(erros_da_época,len(self.amostras))
+            lista_eqm.append(eqm_atual)
+            print("EQM -> "+str(eqm_atual))
             #Contar final da época de treinamento
             contador_de_épocas += 1
-
-            #Compara se os pesos ao final dessa última época foram alterados em relação aos armazenados antes dela
-            if self.pesos == pesos_da_ultima_epoca:
+            #Compara se o módulo de EQM atual - Anterior <= Precisão, se sim, atingiu a precisão desejada
+            if abs(eqm_atual - eqm_anterior) <= precisão and len(lista_eqm) >=2:
                 #Se sim, informa que convergiu, e para o treinamento
                 sinal_de_convergencia = True
+                print(50*"_")
                 print("Convergência na época ["+str(contador_de_épocas)+"]")
-            else:
-                #Se não, atualiza os pesos
-                pesos_da_ultima_epoca = self.pesos
         #Fim do treinamento
-        print("Treinamento Completo em ["+str(contador_de_épocas)+"] Épocas.\n")
+        print("Treinamento Completo em ["+str(contador_de_épocas)+"] Épocas.")
+        print(50 * "_")
+        return lista_eqm
